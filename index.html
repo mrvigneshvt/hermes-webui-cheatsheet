@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hermes WebUI - Complete Master Guide</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-tertiary: #21262d;
+            --bg-card: #1c2128; --text-primary: #e6edf3; --text-secondary: #8b949e;
+            --text-muted: #6e7681; --border: #30363d; --accent: #f97316;
+            --accent-hover: #fb923c; --accent-glow: rgba(249,115,22,0.15);
+            --accent-secondary: #8b5cf6; --success: #3fb950; --warning: #d29922;
+            --danger: #f85149; --info: #58a6ff; --code-bg: #0d1117;
+            --sidebar-width: 280px; --header-height: 64px;
+            --radius: 8px; --radius-lg: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.4);
+            --transition: 0.2s ease;
+        }
+        [data-theme="light"] {
+            --bg-primary: #fff; --bg-secondary: #f6f8fa; --bg-tertiary: #eaeef2;
+            --bg-card: #fff; --text-primary: #1f2328; --text-secondary: #656d76;
+            --text-muted: #8c959f; --border: #d0d7de; --accent: #ea580c;
+            --accent-hover: #f97316; --accent-glow: rgba(234,88,12,0.1);
+            --code-bg: #f6f8fa;
+        }
+        [data-theme="oled"] {
+            --bg-primary: #000; --bg-secondary: #0a0a0a; --bg-tertiary: #141414;
+            --bg-card: #0d0d0d; --border: #1f1f1f; --text-primary: #e6edf3;
+            --text-secondary: #8b949e; --text-muted: #555d66; --code-bg: #000;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; scroll-padding-top:calc(var(--header-height) + 20px); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary); color: var(--text-primary);
+            line-height: 1.7; font-size: 16px; overflow-x: hidden;
+        }
+        .header {
+            position:fixed; top:0; left:0; right:0; height:var(--header-height);
+            background:var(--bg-secondary); border-bottom:1px solid var(--border);
+            display:flex; align-items:center; padding:0 24px; z-index:100;
+            backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+        }
+        .header-logo { display:flex; align-items:center; gap:12px; font-weight:700; font-size:18px; color:var(--accent); }
+        .header-logo svg { width:28px; height:28px; }
+        .header-search { flex:1; max-width:480px; margin:0 24px; position:relative; }
+        .header-search input {
+            width:100%; padding:8px 16px 8px 40px; background:var(--bg-tertiary);
+            border:1px solid var(--border); border-radius:var(--radius);
+            color:var(--text-primary); font-size:14px; outline:none; transition:var(--transition);
+        }
+        .header-search input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+        .header-search svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); width:16px; height:16px; }
+        .header-actions { display:flex; align-items:center; gap:8px; margin-left:auto; }
+        .header-btn {
+            display:flex; align-items:center; gap:6px; padding:6px 12px;
+            background:var(--bg-tertiary); border:1px solid var(--border); border-radius:var(--radius);
+            color:var(--text-secondary); font-size:13px; cursor:pointer; transition:var(--transition); text-decoration:none;
+        }
+        .header-btn:hover { background:var(--bg-secondary); color:var(--text-primary); border-color:var(--accent); }
+        .header-btn svg { width:16px; height:16px; }
+        .menu-toggle { display:none; padding:8px; background:none; border:none; color:var(--text-primary); cursor:pointer; }
+        .menu-toggle svg { width:24px; height:24px; }
+        .sidebar {
+            position:fixed; top:var(--header-height); left:0; bottom:0; width:var(--sidebar-width);
+            background:var(--bg-secondary); border-right:1px solid var(--border);
+            overflow-y:auto; padding:16px 0; z-index:90; transition:transform 0.3s ease;
+        }
+        .sidebar::-webkit-scrollbar { width:6px; }
+        .sidebar::-webkit-scrollbar-track { background:transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+        .sidebar-section { margin-bottom:8px; }
+        .sidebar-section-title {
+            padding:8px 16px; font-size:11px; font-weight:600;
+            text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted);
+        }
+        .sidebar-link {
+            display:flex; align-items:center; gap:8px; padding:6px 16px;
+            color:var(--text-secondary); text-decoration:none; font-size:13.5px;
+            transition:var(--transition); border-left:2px solid transparent;
+        }
+        .sidebar-link:hover { color:var(--text-primary); background:var(--bg-tertiary); }
+        .sidebar-link.active { color:var(--accent); background:var(--accent-glow); border-left-color:var(--accent); }
+        .sidebar-link.sub { padding-left:32px; font-size:12.5px; }
+        .main { margin-left:var(--sidebar-width); margin-top:var(--header-height); min-height:calc(100vh - var(--header-height)); }
+        .content { max-width:900px; margin:0 auto; padding:40px 32px 80px; }
+        .hero { text-align:center; padding:60px 0 40px; border-bottom:1px solid var(--border); margin-bottom:40px; }
+        .hero-badge {
+            display:inline-flex; align-items:center; gap:6px; padding:4px 12px;
+            background:var(--accent-glow); border:1px solid var(--accent); border-radius:20px;
+            color:var(--accent); font-size:12px; font-weight:600; margin-bottom:16px;
+        }
+        .hero h1 {
+            font-size:42px; font-weight:800;
+            background:linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            margin-bottom:12px; line-height:1.2;
+        }
+        .hero p { font-size:18px; color:var(--text-secondary); max-width:600px; margin:0 auto 24px; }
+        .hero-stats { display:flex; justify-content:center; gap:32px; flex-wrap:wrap; }
+        .hero-stat { text-align:center; }
+        .hero-stat-value { font-size:24px; font-weight:700; color:var(--accent); }
+        .hero-stat-label { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+        h2 { font-size:28px; font-weight:700; margin:48px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+        h3 { font-size:22px; font-weight:600; margin:32px 0 12px; }
+        h4 { font-size:18px; font-weight:600; margin:24px 0 8px; }
+        h5 { font-size:15px; font-weight:600; margin:16px 0 8px; color:var(--accent); }
+        p { margin-bottom:16px; color:var(--text-secondary); }
+        a { color:var(--accent); text-decoration:none; }
+        a:hover { text-decoration:underline; }
+        strong { color:var(--text-primary); font-weight:600; }
+        code {
+            font-family:'SF Mono','Fira Code','Cascadia Code',Consolas,monospace;
+            font-size:0.9em; background:var(--code-bg); border:1px solid var(--border);
+            padding:2px 6px; border-radius:4px; color:var(--accent);
+        }
+        pre {
+            background:var(--code-bg); border:1px solid var(--border); border-radius:var(--radius);
+            padding:16px; overflow-x:auto; margin:16px 0;
+        }
+        pre code { background:none; border:none; padding:0; color:var(--text-primary); font-size:13px; line-height:1.6; }
+        .code-header {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:8px 16px; background:var(--bg-tertiary); border:1px solid var(--border);
+            border-bottom:none; border-radius:var(--radius) var(--radius) 0 0; font-size:12px; color:var(--text-muted);
+        }
+        .code-header + pre { border-radius:0 0 var(--radius) var(--radius); margin-top:0; }
+        .copy-btn {
+            padding:4px 8px; background:var(--bg-secondary); border:1px solid var(--border);
+            border-radius:4px; color:var(--text-secondary); font-size:11px; cursor:pointer; transition:var(--transition);
+        }
+        .copy-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .card {
+            background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg);
+            padding:20px; margin:16px 0; box-shadow:var(--shadow);
+        }
+        .card-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; margin:16px 0; }
+        .card-grid .card { margin:0; }
+        .card h4 { margin-top:0; }
+        .callout {
+            padding:16px 20px; border-radius:var(--radius); margin:16px 0;
+            border-left:4px solid; display:flex; gap:12px;
+        }
+        .callout-icon { flex-shrink:0; width:20px; height:20px; margin-top:2px; }
+        .callout-content { flex:1; }
+        .callout-content p { margin:0; color:inherit; }
+        .callout-content strong { color:inherit; }
+        .callout.info { background:rgba(88,166,255,0.08); border-color:var(--info); color:#79c0ff; }
+        .callout.warning { background:rgba(210,153,34,0.08); border-color:var(--warning); color:#e3b341; }
+        .callout.danger { background:rgba(248,81,73,0.08); border-color:var(--danger); color:#ff7b72; }
+        .callout.success { background:rgba(63,185,80,0.08); border-color:var(--success); color:#56d364; }
+        .table-wrapper { overflow-x:auto; margin:16px 0; border:1px solid var(--border); border-radius:var(--radius); }
+        table { width:100%; border-collapse:collapse; font-size:14px; }
+        th { background:var(--bg-tertiary); padding:10px 16px; text-align:left; font-weight:600; border-bottom:1px solid var(--border); }
+        td { padding:10px 16px; border-bottom:1px solid var(--border); color:var(--text-secondary); }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:var(--bg-secondary); }
+        ul, ol { padding-left:24px; margin:12px 0; color:var(--text-secondary); }
+        li { margin-bottom:6px; }
+        li::marker { color:var(--accent); }
+        .steps { counter-reset:step; list-style:none; padding:0; }
+        .steps li { counter-increment:step; position:relative; padding-left:48px; margin-bottom:24px; }
+        .steps li::before {
+            content:counter(step); position:absolute; left:0; top:0; width:32px; height:32px;
+            background:var(--accent); color:#fff; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;
+        }
+        .steps li strong { display:block; margin-bottom:4px; color:var(--text-primary); }
+        .faq-item { border:1px solid var(--border); border-radius:var(--radius); margin:8px 0; overflow:hidden; }
+        .faq-question {
+            width:100%; padding:14px 16px; background:var(--bg-secondary); border:none;
+            color:var(--text-primary); font-size:15px; font-weight:600; text-align:left;
+            cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:var(--transition);
+        }
+        .faq-question:hover { background:var(--bg-tertiary); }
+        .faq-question::after { content:'+'; font-size:20px; color:var(--accent); transition:transform 0.2s ease; }
+        .faq-item.open .faq-question::after { transform:rotate(45deg); }
+        .faq-answer { padding:0 16px; max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease; }
+        .faq-item.open .faq-answer { padding:16px; max-height:2000px; }
+        .faq-answer p, .faq-answer pre, .faq-answer ul { margin-bottom:12px; }
+        .tabs { margin:16px 0; }
+        .tab-buttons { display:flex; border-bottom:1px solid var(--border); overflow-x:auto; }
+        .tab-btn {
+            padding:10px 20px; background:none; border:none; border-bottom:2px solid transparent;
+            color:var(--text-secondary); font-size:14px; font-weight:500; cursor:pointer; white-space:nowrap; transition:var(--transition);
+        }
+        .tab-btn:hover { color:var(--text-primary); }
+        .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+        .tab-content { display:none; padding:16px 0; }
+        .tab-content.active { display:block; }
+        .progress-bar {
+            position:fixed; top:var(--header-height); left:0; height:3px;
+            background:linear-gradient(90deg, var(--accent), var(--accent-secondary)); z-index:101; transition:width 0.1s ease;
+        }
+        .back-to-top {
+            position:fixed; bottom:24px; right:24px; width:40px; height:40px;
+            background:var(--accent); color:#fff; border:none; border-radius:50%;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            box-shadow:var(--shadow-lg); opacity:0; transform:translateY(20px); transition:var(--transition); z-index:50;
+        }
+        .back-to-top.visible { opacity:1; transform:translateY(0); }
+        .back-to-top:hover { background:var(--accent-hover); }
+        .anchor { color:var(--text-muted); text-decoration:none; margin-left:8px; opacity:0; transition:var(--transition); }
+        h2:hover .anchor, h3:hover .anchor, h4:hover .anchor { opacity:1; }
+        .anchor:hover { color:var(--accent); }
+        .feature-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:16px 0; }
+        .feature-item {
+            padding:12px; background:var(--bg-secondary); border:1px solid var(--border);
+            border-radius:var(--radius); font-size:13px;
+        }
+        .feature-item strong { display:block; margin-bottom:4px; color:var(--accent); }
+        .diagram {
+            background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-lg);
+            padding:24px; margin:16px 0; text-align:center; font-family:monospace;
+            font-size:13px; line-height:1.8; color:var(--text-secondary); overflow-x:auto; white-space:pre;
+        }
+        .diagram .hl { color:var(--accent); font-weight:600; }
+        .diagram .dim { color:var(--text-muted); }
+        @media (max-width:1024px) {
+            .sidebar { transform:translateX(-100%); }
+            .sidebar.open { transform:translateX(0); }
+            .main { margin-left:0; }
+            .menu-toggle { display:block; }
+            .header-search { display:none; }
+        }
+        @media (max-width:768px) {
+            .hero h1 { font-size:28px; }
+            .hero p { font-size:15px; }
+            .content { padding:24px 16px 60px; }
+            h2 { font-size:22px; } h3 { font-size:18px; }
+            .hero-stats { gap:16px; }
+            .card-grid { grid-template-columns:1fr; }
+        }
+        @media print {
+            .header, .sidebar, .progress-bar, .back-to-top { display:none; }
+            .main { margin:0; } .content { max-width:100%; padding:0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <header class="header">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="header-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Hermes WebUI Guide
+        </div>
+        <div class="header-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="searchInput" placeholder="Search guide... (Ctrl+K)">
+        </div>
+        <div class="header-actions">
+            <button class="header-btn" id="themeToggle" title="Toggle theme">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                Theme
+            </button>
+            <a class="header-btn" href="https://github.com/nesquena/hermes-webui" target="_blank">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </header>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-section"><div class="sidebar-section-title">Getting Started</div>
+            <a href="#overview" class="sidebar-link active">Overview</a>
+            <a href="#architecture" class="sidebar-link">Architecture</a>
+            <a href="#quick-start" class="sidebar-link">Quick Start</a>
+            <a href="#installation" class="sidebar-link">Installation</a>
+            <a href="#docker-setup" class="sidebar-link">Docker Setup</a>
+            <a href="#remote-access" class="sidebar-link">Remote Access</a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Core Features</div>
+            <a href="#chat-streaming" class="sidebar-link">Chat and Streaming</a>
+            <a href="#session-management" class="sidebar-link">Session Management</a>
+            <a href="#workspace" class="sidebar-link">Workspace and Files</a>
+            <a href="#profiles" class="sidebar-link">Profiles and Models</a>
+            <a href="#tools-approval" class="sidebar-link">Tools and Approval</a>
+            <a href="#slash-commands" class="sidebar-link">Slash Commands</a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Advanced</div>
+            <a href="#skills-memory" class="sidebar-link">Skills and Memory</a>
+            <a href="#cron" class="sidebar-link">Cron and Scheduling</a>
+            <a href="#mcp" class="sidebar-link">MCP Integration</a>
+            <a href="#subagents" class="sidebar-link">Subagents</a>
+            <a href="#insights" class="sidebar-link">Insights and Analytics</a>
+            <a href="#rollback" class="sidebar-link">Rollback and Checkpoints</a>
+            <a href="#voice" class="sidebar-link">Voice Mode</a>
+            <a href="#worktrees" class="sidebar-link">Git Worktrees</a>
+            <a href="#i18n-themes" class="sidebar-link">i18n and Themes</a>
+            <a href="#security" class="sidebar-link">Security and Auth</a>
+            <a href="#pwa-mobile" class="sidebar-link">PWA and Mobile</a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Reference</div>
+            <a href="#env-vars" class="sidebar-link">Environment Variables</a>
+            <a href="#api-reference" class="sidebar-link">API Reference</a>
+            <a href="#troubleshooting" class="sidebar-link">Troubleshooting</a>
+            <a href="#faq" class="sidebar-link">FAQ</a>
+        </div>
+    </nav>
+    <main class="main"><div class="content">
+
+            <div class="hero" id="overview">
+                <div class="hero-badge">v0.51.30 - May 2026</div>
+                <h1>Hermes WebUI Master Guide</h1>
+                <p>The complete end-to-end reference for the browser-based interface to Hermes Agent. From first install to advanced orchestration.</p>
+                <div class="hero-stats">
+                    <div class="hero-stat"><div class="hero-stat-value">7K+</div><div class="hero-stat-label">GitHub Stars</div></div>
+                    <div class="hero-stat"><div class="hero-stat-value">4,288</div><div class="hero-stat-label">Tests</div></div>
+                    <div class="hero-stat"><div class="hero-stat-value">164+</div><div class="hero-stat-label">Releases</div></div>
+                    <div class="hero-stat"><div class="hero-stat-value">8</div><div class="hero-stat-label">Themes</div></div>
+                    <div class="hero-stat"><div class="hero-stat-value">8</div><div class="hero-stat-label">Languages</div></div>
+                </div>
+            </div>
+
+            <section id="overview-section">
+                <h2>What Is Hermes WebUI? <a href="#overview-section" class="anchor">#</a></h2>
+                <p>Hermes WebUI is a lightweight, dark-themed web application that provides a browser-based interface to the Hermes Agent. It delivers <strong>full 1:1 parity with the CLI experience</strong> - everything you can do from a terminal, you can do from this UI. Built with Python and vanilla JavaScript, it requires no build step, no framework, and no bundler.</p>
+                <div class="card-grid">
+                    <div class="card"><h4>Three-Panel Layout</h4><p>Left sidebar for sessions, center for chat, right for workspace file browsing. Modeled on the Claude-style interface.</p></div>
+                    <div class="card"><h4>Zero Extra Setup</h4><p>Uses your existing Hermes Agent and configured models. No additional services needed.</p></div>
+                    <div class="card"><h4>Mobile-First</h4><p>Responsive SPA designed for phone browsers. Hamburger nav, touch-friendly targets, full-height chat.</p></div>
+                    <div class="card"><h4>Docker Ready</h4><p>Pre-built multi-arch images (amd64 + arm64) on GHCR. Single, two, or three-container setups.</p></div>
+                    <div class="card"><h4>Secure by Default</h4><p>Optional password auth, signed HMAC cookies, SRI-pinned CDN resources, security headers.</p></div>
+                    <div class="card"><h4>Internationalized</h4><p>8 locales: English, Chinese (Simplified and Traditional), Korean, Russian, Spanish, German, Portuguese.</p></div>
+                </div>
+                <div class="callout info">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    <div class="callout-content"><strong>Key Principle:</strong> Hermes WebUI is not a replacement for Hermes Agent - it is a <em>surface</em> for it. The WebUI reads your existing <code>~/.hermes</code> directory, shares the same config, sessions, skills, and memory. Nothing is duplicated or proxied.</div>
+                </div>
+            </section>
+
+            <section id="architecture">
+                <h2>Architecture <a href="#architecture" class="anchor">#</a></h2>
+                <p>Hermes WebUI is a <strong>single-process Python application</strong> that imports Hermes Agent modules directly - there is no HTTP communication between separate services.</p>
+                <div class="diagram"><span class="hl">+-------------------------------------------------+</span>
+<span class="hl">|           Hermes WebUI (Python Server)          |</span>
+<span class="dim">|  +-----------+  +----------+  +--------------+  |</span>
+<span class="dim">|  |  Routes   |  | Streaming|  |  Workspace   |  |</span>
+<span class="dim">|  |  (1180L)  |  |  (236L)  |  |   (77L)      |  |</span>
+<span class="dim">|  +-----+-----+  +----+-----+  +------+-------+  |</span>
+<span class="dim">|  +-----+-----------+-------------+-----------+  |</span>
+<span class="dim">|  |         Hermes Agent (In-Process)         |  |</span>
+<span class="dim">|  |  config.yaml | state.db | skills | memory  |  |</span>
+<span class="dim">|  +-------------------------------------------+  |</span>
+<span class="hl">+-------------------------------------------------+</span>
+                          | SSE / HTTP
+<span class="hl">+-------------------------------------------------+</span>
+<span class="hl">|              Browser (Vanilla JS)               |</span>
+<span class="dim">|  ui.js | sessions.js | messages.js | panels.js   |</span>
+<span class="dim">|  workspace.js | commands.js | boot.js | i18n.js  |</span>
+<span class="hl">+-------------------------------------------------+</span></div>
+                <h3>Backend Structure</h3>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>File</th><th>Purpose</th><th>Lines</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>api/routes.py</code></td><td>All GET + POST route handlers</td><td>~1180</td></tr>
+                        <tr><td><code>api/config.py</code></td><td>Discovery, globals, model detection, reloadable config</td><td>~701</td></tr>
+                        <tr><td><code>api/streaming.py</code></td><td>SSE engine, run_agent, cancel, HERMES_HOME save/restore</td><td>~236</td></tr>
+                        <tr><td><code>api/profiles.py</code></td><td>Profile state management, hermes_cli wrapper</td><td>~246</td></tr>
+                        <tr><td><code>api/models.py</code></td><td>Session model + CRUD, per-session profile tracking</td><td>~137</td></tr>
+                        <tr><td><code>api/auth.py</code></td><td>Optional password authentication, signed cookies</td><td>~149</td></tr>
+                        <tr><td><code>api/helpers.py</code></td><td>HTTP helpers, safe_resolve, security headers</td><td>~71</td></tr>
+                        <tr><td><code>api/workspace.py</code></td><td>File ops: list_dir, read_file_content, workspace helpers</td><td>~77</td></tr>
+                        <tr><td><code>api/upload.py</code></td><td>Multipart parser, file upload handler</td><td>~78</td></tr>
+                        <tr><td><code>api/onboarding.py</code></td><td>First-run onboarding, provider config writes</td><td>-</td></tr>
+                    </tbody>
+                </table></div>
+                <h3>Frontend Structure</h3>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>File</th><th>Purpose</th><th>Lines</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>static/ui.js</code></td><td>DOM helpers, renderMd, tool cards, model dropdown, file tree</td><td>~977</td></tr>
+                        <tr><td><code>static/panels.js</code></td><td>Cron, skills, memory, workspace, profiles, todo, settings</td><td>~974</td></tr>
+                        <tr><td><code>static/sessions.js</code></td><td>Session CRUD, list rendering, search, SVG icons, dropdowns</td><td>~533</td></tr>
+                        <tr><td><code>static/messages.js</code></td><td>send(), SSE event handlers, approval, transcript</td><td>~297</td></tr>
+                        <tr><td><code>static/boot.js</code></td><td>Event wiring, mobile nav, voice input, boot IIFE</td><td>~338</td></tr>
+                        <tr><td><code>static/workspace.js</code></td><td>File preview, file ops, loadDir, clearPreview</td><td>~185</td></tr>
+                        <tr><td><code>static/commands.js</code></td><td>Slash command registry, parser, autocomplete</td><td>~156</td></tr>
+                        <tr><td><code>static/style.css</code></td><td>All CSS including mobile responsive</td><td>~670</td></tr>
+                    </tbody>
+                </table></div>
+                <div class="callout info">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    <div class="callout-content"><strong>Why this matters:</strong> Because the WebUI imports Hermes Agent modules in-process, there is zero serialization overhead. The WebUI can read <code>state.db</code>, <code>config.yaml</code>, skills, memory files, and session data directly. This is why features like the CLI session bridge work.</div>
+                </div>
+            </section>
+
+            <section id="quick-start">
+                <h2>Quick Start <a href="#quick-start" class="anchor">#</a></h2>
+                <p>Get Hermes WebUI running in under 2 minutes.</p>
+                <ol class="steps">
+                    <li><strong>Clone the repository</strong><pre><code>git clone https://github.com/nesquena/hermes-webui.git hermes-webui
+cd hermes-webui</code></pre></li>
+                    <li><strong>Run the start script</strong><pre><code>./start.sh</code></pre><p>Installs dependencies, checks for Hermes Agent, starts server on <code>http://localhost:8787</code>.</p></li>
+                    <li><strong>Open in browser</strong><p>Navigate to <code>http://localhost:8787</code>. The onboarding wizard guides you through provider setup on first run.</p></li>
+                </ol>
+                <div class="callout success">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <div class="callout-content"><strong>That is it.</strong> No build step, no bundler, no framework. If you are on a VPS, see Docker and Remote Access below.</div>
+                </div>
+            </section>
+
+            <section id="installation">
+                <h2>Installation Methods <a href="#installation" class="anchor">#</a></h2>
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="local">Local Install</button>
+                        <button class="tab-btn" data-tab="docker">Docker (Recommended)</button>
+                        <button class="tab-btn" data-tab="manual">Manual Setup</button>
+                    </div>
+                    <div class="tab-content active" id="tab-local">
+                        <h4>Local Installation via start.sh</h4>
+                        <pre><code>git clone https://github.com/nesquena/hermes-webui.git hermes-webui
+cd hermes-webui
+./start.sh</code></pre>
+                        <p>The script will:</p>
+                        <ul>
+                            <li>Check for Python 3.10+ and install dependencies via <code>pip</code></li>
+                            <li>Verify Hermes Agent is installed and accessible</li>
+                            <li>Create <code>~/.hermes/webui-mvp</code> state directory if needed</li>
+                            <li>Start the server on <code>127.0.0.1:8787</code></li>
+                            <li>If running over SSH, print the SSH tunnel command automatically</li>
+                        </ul>
+                        <div class="callout warning">
+                            <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <div class="callout-content"><strong>Prerequisites:</strong> Python 3.10+, Hermes Agent installed, API keys configured in <code>~/.hermes/.env</code> or <code>~/.hermes/config.yaml</code>.</div>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="tab-docker">
+                        <h4>Docker Installation (Recommended for VPS)</h4>
+                        <pre><code>docker pull ghcr.io/nesquena/hermes-webui:latest
+docker run -d \
+  -e WANTED_UID=$(id -u) -e WANTED_GID=$(id -g) \
+  -v ~/.hermes:/home/hermeswebui/.hermes \
+  -v ~/workspace:/workspace \
+  -p 127.0.0.1:8787:8787 \
+  ghcr.io/nesquena/hermes-webui:latest</code></pre>
+                        <p>See <a href="#docker-setup">Docker Setup</a> for full details.</p>
+                    </div>
+                    <div class="tab-content" id="tab-manual">
+                        <h4>Manual Setup</h4>
+                        <pre><code>git clone https://github.com/nesquena/hermes-webui.git
+cd hermes-webui
+mkdir -p ~/.hermes/webui-mvp
+pip install -r requirements.txt
+export HERMES_WEBUI_HOST=0.0.0.0
+export HERMES_WEBUI_PORT=8787
+python -m uvicorn api.main:app --host 0.0.0.0 --port 8787</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="docker-setup">
+                <h2>Docker Setup <a href="#docker-setup" class="anchor">#</a></h2>
+                <p>Docker is the recommended deployment method for VPS. Three compose configurations:</p>
+                <div class="card-grid">
+                    <div class="card"><h4>Single-Container</h4><p><strong>Recommended.</strong> WebUI runs agent in-process. Simplest setup. Uses <code>docker-compose.yml</code></p></div>
+                    <div class="card"><h4>Two-Container</h4><p>Agent and WebUI separate. Isolation between gateway and chat UI. Uses <code>docker-compose.two-container.yml</code></p></div>
+                    <div class="card"><h4>Three-Container</h4><p>Agent + Dashboard + WebUI. Full monitoring stack. Uses <code>docker-compose.three-container.yml</code></p></div>
+                </div>
+                <h3>Single-Container Setup</h3>
+                <div class="code-header"><span>docker-compose.yml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>version: '3.8'
+services:
+  hermes-webui:
+    image: ghcr.io/nesquena/hermes-webui:latest
+    container_name: hermes-webui
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - hermes-home:/home/hermeswebui/.hermes
+      - ~/workspace:/workspace
+    environment:
+      - WANTED_UID=${UID:-1000}
+      - WANTED_GID=${GID:-1000}
+      - HERMES_WEBUI_STATE_DIR=/home/hermeswebui/.hermes/webui-mvp
+    restart: unless-stopped
+volumes:
+  hermes-home:</code></pre>
+                <p><strong>Quick start:</strong></p>
+                <pre><code>git clone https://github.com/nesquena/hermes-webui
+cd hermes-webui
+cp .env.docker.example .env
+docker compose up -d</code></pre>
+                <h3>Two-Container Setup</h3>
+                <p>Use when you run Hermes Agent separately (for Telegram/Discord/CLI) and want WebUI as an additional surface.</p>
+                <div class="code-header"><span>docker-compose.two-container.yml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>version: '3.8'
+services:
+  hermes-agent:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-agent
+    volumes:
+      - hermes-home:/root/.hermes
+      - hermes-agent-src:/opt/hermes
+    environment:
+      - HERMES_HOME=/root/.hermes
+    restart: unless-stopped
+  hermes-webui:
+    image: ghcr.io/nesquena/hermes-webui:latest
+    container_name: hermes-webui
+    depends_on:
+      - hermes-agent
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - hermes-home:/home/hermeswebui/.hermes
+      - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
+      - ~/workspace:/workspace
+    environment:
+      - HERMES_WEBUI_HOST=0.0.0.0
+      - HERMES_WEBUI_PORT=8787
+      - HERMES_WEBUI_STATE_DIR=/home/hermeswebui/.hermes/webui-mvp
+      - WANTED_UID=${UID:-1000}
+      - WANTED_GID=${GID:-1000}
+    restart: unless-stopped
+volumes:
+  hermes-home:
+  hermes-agent-src:</code></pre>
+                <div class="callout warning">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div class="callout-content"><strong>Named volumes are critical:</strong> The two-container setup uses named Docker volumes by default. Named volumes solve the UID/GID problem automatically. Do not replace them with bind mounts unless you understand the permission implications.</div>
+                </div>
+                <h3>UID/GID Configuration</h3>
+                <p>The container auto-detects your host user UID/GID. Set explicitly if needed:</p>
+                <pre><code>id -u  # e.g., 1000
+id -g  # e.g., 1000
+# Set in .env: UID=1000, GID=1000</code></pre>
+                <h3>Bind-Mount Migration (Advanced)</h3>
+                <pre><code>volumes:
+  hermes-home:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/youruser/.hermes</code></pre>
+                <p><strong>Requirements:</strong> Host directory must be readable by container UID. All containers sharing the volume must run as the SAME UID/GID. If host <code>.env</code> is mode 0640, set <code>HERMES_SKIP_CHMOD=1</code>.</p>
+                <h3>Dependency Installation</h3>
+                <p>At startup, the init script runs:</p>
+                <pre><code>uv pip install /home/hermeswebui/.hermes/hermes-agent</code></pre>
+                <p>This installs Hermes Agent and all dependencies into the WebUI Python environment on first boot. Takes 1-2 minutes.</p>
+            </section>
+
+            <section id="remote-access">
+                <h2>Remote Access <a href="#remote-access" class="anchor">#</a></h2>
+                <h3>SSH Tunnel (Recommended)</h3>
+                <p>Safest method. No ports exposed to the internet.</p>
+                <pre><code>ssh -N -L 8787:127.0.0.1:8787 user@your-server.com</code></pre>
+                <p>Then open <code>http://localhost:8787</code>. The <code>start.sh</code> script prints this command automatically when it detects SSH.</p>
+                <h3>Tailscale / ZeroTier</h3>
+                <ol class="steps">
+                    <li><strong>Install Tailscale on VPS</strong><pre><code>curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up</code></pre></li>
+                    <li><strong>Install Tailscale on local machine</strong><pre><code>curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up</code></pre></li>
+                    <li><strong>Access via Tailscale IP</strong><pre><code>http://&lt;tailscale-ip&gt;:8787</code></pre></li>
+                </ol>
+                <h3>Direct Network Exposure</h3>
+                <div class="callout danger">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div class="callout-content"><strong>Security warning:</strong> Only expose directly if you set <code>HERMES_WEBUI_PASSWORD</code>. Without a password, anyone who can reach the port has full access to your agent.</div>
+                </div>
+                <pre><code># In docker-compose.yml:
+ports:
+  - "8787:8787"
+environment:
+  - HERMES_WEBUI_PASSWORD=your-strong-password</code></pre>
+                <h3>Reverse Proxy (Caddy)</h3>
+                <pre><code>hermes-webui.yourdomain.com {
+    reverse_proxy localhost:8787
+}</code></pre>
+                <p>Caddy auto-provisions Let's Encrypt certificates.</p>
+                <h3>Onboarding Behind Reverse Proxy</h3>
+                <p>If behind nginx/Caddy/Traefik or SSH tunnel, the onboarding IP check may block you. Fixed in v0.50.22+. For older versions:</p>
+                <pre><code># Option 1: Set env var
+HERMES_WEBUI_ONBOARDING_OPEN=1
+# Option 2: Set password before first run
+HERMES_WEBUI_PASSWORD=your-password
+# Option 3: Upgrade to v0.50.22+</code></pre>
+            </section>
+
+            <section id="chat-streaming">
+                <h2>Chat and Streaming <a href="#chat-streaming" class="anchor">#</a></h2>
+                <p>The chat interface is the core of Hermes WebUI. Every CLI workflow has a web equivalent.</p>
+                <h3>Sending Messages</h3>
+                <p>Type in the composer and press Enter. Messages are sent via SSE (Server-Sent Events) for real-time streaming.</p>
+                <h4>Streaming Behavior</h4>
+                <ul>
+                    <li><strong>rAF-throttled rendering:</strong> Token rendering throttled via <code>requestAnimationFrame</code> to prevent UI jank</li>
+                    <li><strong>SSE auto-reconnect:</strong> If connection drops (common with SSH tunnels), stream automatically reconnects</li>
+                    <li><strong>Send while streaming:</strong> Queue next message while agent responds - sent inline after current response</li>
+                </ul>
+                <h3>Model Selection</h3>
+                <p>The composer footer includes a model picker showing all providers from your <code>config.yaml</code>:</p>
+                <ul>
+                    <li><strong>Multi-provider:</strong> OpenAI, Anthropic, Google, OpenRouter, xAI, GLM, DeepSeek, Mistral, MiniMax, Kimi, Nous Portal, custom OpenAI-compatible</li>
+                    <li><strong>Dynamic discovery:</strong> Ollama, LM Studio, vLLM models discovered live via <code>/v1/models</code></li>
+                    <li><strong>Free-form OpenRouter:</strong> Type any model name with autocomplete</li>
+                    <li><strong>Per-conversation:</strong> Each session can use a different model</li>
+                    <li><strong>LM Studio first-class:</strong> Dedicated provider with live discovery even without env vars injected</li>
+                </ul>
+                <h3>Reasoning Display</h3>
+                <ul>
+                    <li><strong>Claude thinking blocks:</strong> Rendered inline with expand/collapse</li>
+                    <li><strong>o3 reasoning blocks:</strong> Distinct styling</li>
+                    <li><strong>Reasoning effort selector:</strong> low/medium/high + <code>/reasoning</code> command</li>
+                </ul>
+                <h3>Rich Content Rendering</h3>
+                <ul>
+                    <li><strong>Markdown:</strong> Full CommonMark with GFM extensions</li>
+                    <li><strong>Code blocks:</strong> Prism.js syntax highlighting (Python, JS, bash, JSON, SQL, etc.). Copy button with "Copied!" feedback</li>
+                    <li><strong>Mermaid diagrams:</strong> Rendered inline from <code>```mermaid</code> blocks</li>
+                    <li><strong>KaTeX math:</strong> Inline <code>$...$</code> and block <code>$$...$$</code> rendering</li>
+                </ul>
+                <h3>Cancel and Retry</h3>
+                <ul>
+                    <li><strong>Stop button:</strong> Cancel streaming at any time</li>
+                    <li><strong>Retry:</strong> Delete last assistant message and resend with one click</li>
+                </ul>
+                <h3>Context Usage Indicator</h3>
+                <p>Circular ring badge in composer footer shows input tokens, output tokens, estimated cost, and context fill percentage. Toggleable in Settings or via <code>/usage</code>.</p>
+                <h3>File Attachments</h3>
+                <ul>
+                    <li>Drag-and-drop or click to attach</li>
+                    <li>Persist across page reloads</li>
+                    <li>Images displayed inline</li>
+                </ul>
+            </section>
+
+            <section id="session-management">
+                <h2>Session Management <a href="#session-management" class="anchor">#</a></h2>
+                <h3>Basic Operations</h3>
+                <ul>
+                    <li><strong>Create:</strong> Click "+" in sidebar or use <code>/new</code></li>
+                    <li><strong>Rename:</strong> Double-click title (Escape cancels) or use <code>...</code> dropdown</li>
+                    <li><strong>Delete:</strong> Use <code>...</code> dropdown - Delete</li>
+                    <li><strong>Duplicate:</strong> Fork a session to create a new branch with same history</li>
+                    <li><strong>LLM-generated titles:</strong> First message triggers automatic title generation</li>
+                </ul>
+                <h3>Organization</h3>
+                <h4>Tags</h4>
+                <p>Add <code>#tag</code> to session titles for colored chips. Click chips to filter. Tags extracted automatically from title text.</p>
+                <h4>Projects</h4>
+                <p>Named folders with colors. Sessions assigned to projects via <code>...</code> dropdown. Sidebar shows chip filter bar including "Unassigned" filter.</p>
+                <h4>Date Grouping</h4>
+                <p>Grouped by: Today, Yesterday, Last Week, Last Month, Earlier. Collapsible groups.</p>
+                <h4>Pin and Archive</h4>
+                <p>Star sessions to pin to top. Archive sessions to hide from main list; "Show N archived" toggle reveals them.</p>
+                <h3>Search</h3>
+                <ul>
+                    <li><strong>Title search:</strong> Filter by title in sidebar search box</li>
+                    <li><strong>Content search:</strong> Full-text search across all session messages</li>
+                </ul>
+                <h3>Batch Operations</h3>
+                <p>Multi-select sessions, then bulk delete, move to project, or archive.</p>
+                <h3>Import/Export</h3>
+                <ul>
+                    <li><strong>Export JSON:</strong> Full messages + metadata</li>
+                    <li><strong>Import JSON:</strong> Restore sessions from export</li>
+                    <li><strong>Download Markdown:</strong> Transcript for sharing or archiving</li>
+                </ul>
+                <h3>CLI Session Bridge</h3>
+                <p>Unique to Hermes WebUI: CLI sessions from <code>hermes-agent</code> SQLite store appear in sidebar with gold "cli" badge. Click to import with full history, then reply normally.</p>
+                <h3>Subagent Session Tree</h3>
+                <p>Sessions with <code>parent_session_id</code> grouped under parent in sidebar with expand/collapse chevrons and child count badges. Collapse state persists in localStorage.</p>
+                <h3>Per-Session Configuration</h3>
+                <ul>
+                    <li><strong>Per-session profile:</strong> Different model profile per session</li>
+                    <li><strong>Per-session toolset:</strong> Override tools via <code>/toolsets</code></li>
+                    <li><strong>Per-session model:</strong> Composer-scoped model picker</li>
+                </ul>
+                <h3>Session Navigation</h3>
+                <p>Opt-in in Appearance settings:</p>
+                <ul>
+                    <li><strong>Jump buttons:</strong> Sticky "Start" pill (loads full history) and "End" pill</li>
+                    <li><strong>Endless scroll:</strong> Auto-prefetches older transcript with 1.5x viewport prefetch</li>
+                    <li><strong>Viewport preservation:</strong> Loading older history anchors at current viewport</li>
+                </ul>
+                <p>Sessions persist across page reloads and SSH tunnel disconnections. Browser tab title reflects active session name.</p>
+            </section>
+
+            <section id="workspace">
+                <h2>Workspace and File Browser <a href="#workspace" class="anchor">#</a></h2>
+                <h3>File Tree</h3>
+                <ul>
+                    <li><strong>Directory tree:</strong> Expandable/collapsible folders</li>
+                    <li><strong>Drag-resizable panel:</strong> Resize by dragging edge</li>
+                    <li><strong>Git detection:</strong> Branch name in header, dirty file count badge</li>
+                </ul>
+                <h3>File Preview</h3>
+                <ul>
+                    <li><strong>Text/Code:</strong> Syntax-highlighted (Prism.js) - Python, JS, bash, JSON, SQL</li>
+                    <li><strong>Markdown:</strong> Rendered preview</li>
+                    <li><strong>Images:</strong> Inline preview</li>
+                    <li><strong>Binary files:</strong> Auto-detected from MIME type, downloadable</li>
+                </ul>
+                <h3>File Operations</h3>
+                <ul>
+                    <li><strong>Create:</strong> New file or folder from toolbar</li>
+                    <li><strong>Edit:</strong> Inline editing with unsaved-change guard</li>
+                    <li><strong>Delete/Rename:</strong> Files and folders</li>
+                    <li><strong>Download:</strong> Any file to local machine</li>
+                </ul>
+                <h3>Workspace Allowlist</h3>
+                <p>Paths validated against <code>workspaces.json</code>. <code>_resolve_workspace</code> prevents directory traversal attacks.</p>
+                <h3>Auto-Close</h3>
+                <p>File preview auto-closes on directory navigation, with unsaved-edit guard.</p>
+            </section>
+
+            <section id="profiles">
+                <h2>Profiles and Models <a href="#profiles" class="anchor">#</a></h2>
+                <p>Profiles are named configurations bundling model selection, provider settings, and agent behavior.</p>
+                <h3>Profile Management</h3>
+                <ul>
+                    <li><strong>Create:</strong> Define named profiles with model/provider combinations</li>
+                    <li><strong>Clone:</strong> Clone config from existing profile</li>
+                    <li><strong>Edit/Delete:</strong> Modify or remove profiles</li>
+                </ul>
+                <h3>Provider Configuration</h3>
+                <ul>
+                    <li><strong>Provider:</strong> OpenRouter, Anthropic, OpenAI, Google, or custom</li>
+                    <li><strong>Custom endpoint:</strong> Base URL, API key, model name</li>
+                    <li><strong>API key:</strong> Written into <code>config.yaml</code> at creation</li>
+                </ul>
+                <h3>Seamless Switching</h3>
+                <p>No server restart needed. WebUI tracks which profile each session uses. Each session records which profile was used.</p>
+            </section>
+
+            <section id="tools-approval">
+                <h2>Tools and Command Approval <a href="#tools-approval" class="anchor">#</a></h2>
+                <h3>Tool Call Cards</h3>
+                <ul>
+                    <li><strong>Tool name:</strong> Displayed prominently</li>
+                    <li><strong>Arguments:</strong> Expandable section</li>
+                    <li><strong>Result snippet:</strong> Preview of output</li>
+                    <li><strong>Expand/collapse all:</strong> Toggle for multi-tool turns</li>
+                </ul>
+                <h3>Command Approval</h3>
+                <p>When agent attempts dangerous shell commands, an approval card appears:</p>
+                <ul>
+                    <li><strong>Allow once:</strong> Single execution</li>
+                    <li><strong>Allow for session:</strong> All similar commands this session</li>
+                    <li><strong>Allow always:</strong> Permanently allow this pattern</li>
+                    <li><strong>Deny:</strong> Block execution</li>
+                </ul>
+                <p>Approval polling is SSE-pushed - card updates in real-time.</p>
+                <h3>Hermes Detection</h3>
+                <p>Hermes detects destructive commands (<code>rm -rf</code>, <code>drop table</code>, etc.) and requires approval. Default is fail-closed - if unsure, it stops.</p>
+                <h3>Sandbox Backends</h3>
+                <p>Six sandbox backends: Docker, SSH, Singularity, Modal, and more. Configured via <code>config.yaml</code>.</p>
+            </section>
+
+            <section id="slash-commands">
+                <h2>Slash Commands <a href="#slash-commands" class="anchor">#</a></h2>
+                <p>Type <code>/</code> in the composer for autocomplete picker.</p>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>Command</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>/new</code></td><td>Create new session</td></tr>
+                        <tr><td><code>/compact</code></td><td>Compact conversation context</td></tr>
+                        <tr><td><code>/reasoning</code></td><td>Set reasoning effort (low/medium/high)</td></tr>
+                        <tr><td><code>/theme</code></td><td>Switch themes</td></tr>
+                        <tr><td><code>/usage</code></td><td>Toggle token/cost display</td></tr>
+                        <tr><td><code>/toolsets</code></td><td>Override tools for this session</td></tr>
+                        <tr><td><code>/insights [days]</code></td><td>Open Insights panel with time filter</td></tr>
+                        <tr><td><code>/goal</code></td><td>Track multi-turn goals with budget</td></tr>
+                        <tr><td><code>/profiles</code></td><td>Switch active model profile</td></tr>
+                        <tr><td><code>/models</code></td><td>Open model picker</td></tr>
+                        <tr><td><code>/settings</code></td><td>Open Hermes Control Center</td></tr>
+                        <tr><td><code>/help</code></td><td>Show available commands</td></tr>
+                        <tr><td>Plugin commands</td><td>Execute via <code>/api/commands/exec</code></td></tr>
+                    </tbody>
+                </table></div>
+                <div class="callout info">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    <div class="callout-content"><strong>Plugin commands:</strong> Plugin-registered slash commands surface in the WebUI picker and execute through the plugin endpoint, ensuring full CLI parity.</div>
+                </div>
+            </section>
+
+            <section id="skills-memory">
+                <h2>Skills and Memory <a href="#skills-memory" class="anchor">#</a></h2>
+                <h3>Skills System</h3>
+                <p>Hermes Agent has a self-improving skills system that auto-generates reusable skills from complex tasks. WebUI provides full CRUD:</p>
+                <ul>
+                    <li><strong>Browse:</strong> View all skills in Control Center</li>
+                    <li><strong>Create/Edit/Delete:</strong> Full skill management</li>
+                </ul>
+                <p>Skills stored as markdown in <code>~/.hermes/skills/</code>, directly editable.</p>
+                <h3>Memory System</h3>
+                <p>Hermes retains context across sessions via:</p>
+                <ul>
+                    <li><strong>User profile:</strong> Persistent preferences and identity</li>
+                    <li><strong>Agent notes:</strong> Manually written or auto-generated notes</li>
+                    <li><strong>Self-improving skills:</strong> Skills that evolve from experience</li>
+                </ul>
+                <p>Memory files stored in <code>~/.hermes/memory/</code> as editable markdown. WebUI provides memory write surface in Control Center.</p>
+                <div class="callout info">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                    <div class="callout-content"><strong>Memory inspectability:</strong> Unlike cloud agents, Hermes memory is plain markdown you can read, edit, and audit. You own your memory data.</div>
+                </div>
+            </section>
+
+            <section id="cron">
+                <h2>Cron and Scheduled Jobs <a href="#cron" class="anchor">#</a></h2>
+                <p>Self-hosted scheduling that fires while you are offline and delivers results to multiple platforms.</p>
+                <h3>Creating Cron Jobs</h3>
+                <ul>
+                    <li><strong>CRUD:</strong> Create, view, switch, edit, delete from Control Center</li>
+                    <li><strong>Cron expressions:</strong> Standard cron syntax</li>
+                    <li><strong>Delivery targets:</strong> Telegram, Discord, Slack, Signal, email, and more</li>
+                </ul>
+                <h3>How It Works</h3>
+                <p>Cron jobs managed by Hermes Agent scheduler. Execution happens in the agent process. Jobs fire even when WebUI is closed, as long as agent is running.</p>
+                <h3>Use Cases</h3>
+                <ul>
+                    <li>Daily data aggregation and report generation</li>
+                    <li>Weekly file organization and cleanup</li>
+                    <li>Scheduled reminders and notifications</li>
+                    <li>Periodic web scraping and data collection</li>
+                </ul>
+            </section>
+
+            <section id="mcp">
+                <h2>MCP Integration <a href="#mcp" class="anchor">#</a></h2>
+                <p>Model Context Protocol allows Hermes Agent to use external tools and services.</p>
+                <h3>MCP Server UI</h3>
+                <ul>
+                    <li><strong>View MCP servers:</strong> See configured servers and status</li>
+                    <li><strong>Configure:</strong> Add, edit, remove MCP server configurations</li>
+                    <li><strong>Tool discovery:</strong> MCP tools appear alongside native Hermes tools</li>
+                </ul>
+                <p>MCP server rewritten in v0.51.28 for better reliability, tool discovery, error handling, and connection management.</p>
+            </section>
+
+            <section id="subagents">
+                <h2>Subagents and Delegation <a href="#subagents" class="anchor">#</a></h2>
+                <h3>Subagent Delegation Cards</h3>
+                <ul>
+                    <li><strong>Distinct icon:</strong> Child agent tasks shown with unique icon</li>
+                    <li><strong>Streaming display:</strong> Real-time progress of subagent execution</li>
+                    <li><strong>Status tracking:</strong> See when subagents start, complete, or fail</li>
+                </ul>
+                <h3>Session Tree</h3>
+                <p>Sessions spawned by subagents linked via <code>parent_session_id</code>:</p>
+                <ul>
+                    <li><strong>Expand/collapse chevrons:</strong> Show/hide child sessions</li>
+                    <li><strong>Child count badges:</strong> See how many children a parent has</li>
+                    <li><strong>localStorage persistence:</strong> Collapse state survives page reload</li>
+                </ul>
+            </section>
+
+            <section id="insights">
+                <h2>Insights and Analytics <a href="#insights" class="anchor">#</a></h2>
+                <p>Usage analytics across all sessions.</p>
+                <h3>Overview Cards</h3>
+                <ul>
+                    <li><strong>Token total:</strong> Aggregate input + output tokens</li>
+                    <li><strong>Cost total:</strong> Estimated spending</li>
+                    <li><strong>Session count:</strong> Total conversations in period</li>
+                    <li><strong>Active days:</strong> Days with activity</li>
+                </ul>
+                <h3>Model Usage Table</h3>
+                <p>Breakdown by model: name, sessions, tokens, cost.</p>
+                <h3>Top Tools</h3>
+                <p>Ranked list with usage bars.</p>
+                <h3>Activity Heatmap</h3>
+                <ul>
+                    <li><strong>Day-of-week bars:</strong> Activity by Mon-Sun</li>
+                    <li><strong>Top hours:</strong> When you are most active</li>
+                </ul>
+                <h3>Notable Sessions</h3>
+                <p>Links to actual sessions - click to load in chat view.</p>
+                <h3>Days Selector</h3>
+                <p>Filter by 7 / 30 / 90 / All days.</p>
+                <h3>Backend</h3>
+                <p><code>GET /api/insights?days=30</code> instantiates <code>InsightsEngine</code> from <code>agent/insights.py</code>. Capped at 365 days. Guarded by <code>sync_to_insights</code> setting.</p>
+            </section>
+
+            <section id="rollback">
+                <h2>Rollback and Checkpoints <a href="#rollback" class="anchor">#</a></h2>
+                <p>Hermes Agent maintains workspace checkpoints via shadow git repos.</p>
+                <h3>Checkpoint List</h3>
+                <p>View all checkpoints in workspace detail panel with timestamp and description.</p>
+                <h3>Diff Viewer</h3>
+                <p>Modal diff viewer shows changes between current state and any checkpoint. Syntax-highlighted, side-by-side.</p>
+                <h3>Restore</h3>
+                <p>Restore with confirmation dialog. Reads shadow git repos directly.</p>
+                <h3>API Endpoints</h3>
+                <ul>
+                    <li><code>GET /api/rollback/list</code> - List all checkpoints</li>
+                    <li><code>GET /api/rollback/diff</code> - Get diff for a checkpoint</li>
+                    <li><code>POST /api/rollback/restore</code> - Restore to a checkpoint</li>
+                </ul>
+            </section>
+
+            <section id="voice">
+                <h2>Voice Mode <a href="#voice" class="anchor">#</a></h2>
+                <p>Turn-based voice interaction using browser Web Speech API.</p>
+                <ol class="steps">
+                    <li><strong>Activate:</strong> Click voice button in composer</li>
+                    <li><strong>Speak:</strong> Browser captures audio via Web Speech API (STT)</li>
+                    <li><strong>Send:</strong> Transcribed text sent as message</li>
+                    <li><strong>Listen:</strong> Agent response read aloud via TTS</li>
+                    <li><strong>Loop:</strong> Auto-resumes listening after response completes</li>
+                </ol>
+                <h3>Features</h3>
+                <ul>
+                    <li><strong>Progressive enhancement:</strong> Hidden if Web Speech API unsupported</li>
+                    <li><strong>Pulsing indicator:</strong> Visual feedback when listening</li>
+                    <li><strong>TTS settings:</strong> Respects existing voice/rate/pitch config</li>
+                    <li><strong>Error handling:</strong> Bail-out on <code>not-allowed</code> and <code>audio-capture</code> errors with toast</li>
+                </ul>
+                <div class="callout warning">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div class="callout-content"><strong>Browser support:</strong> Requires Chrome, Edge, or Safari. Firefox does not support SpeechRecognition. Hidden automatically in unsupported browsers.</div>
+                </div>
+            </section>
+
+            <section id="worktrees">
+                <h2>Git Worktrees <a href="#worktrees" class="anchor">#</a></h2>
+                <p>Create isolated git worktrees for sessions, enabling parallel development branches.</p>
+                <h3>Creating Worktree Sessions</h3>
+                <p><code>POST /api/session/new</code> accepts <code>worktree: true</code> flag:</p>
+                <ul>
+                    <li>Creates isolated worktree at <code>&lt;repo&gt;/.worktrees/&lt;session&gt;-XXXX</code></li>
+                    <li>Persists <code>worktree_path</code>, <code>worktree_branch</code>, <code>worktree_root</code>, <code>worktree_commit</code></li>
+                    <li>Worktree indicator shown in sidebar</li>
+                </ul>
+                <h3>Worktree Behavior</h3>
+                <ul>
+                    <li>Empty worktree sessions stay visible in sidebar</li>
+                    <li>Filter at <code>/worktrees/</code> to see uncommitted edits</li>
+                    <li>Default branch is master</li>
+                </ul>
+            </section>
+
+            <section id="i18n-themes">
+                <h2>Internationalization and Themes <a href="#i18n-themes" class="anchor">#</a></h2>
+                <h3>Supported Languages</h3>
+                <div class="feature-grid">
+                    <div class="feature-item"><strong>English</strong>Default locale, full coverage</div>
+                    <div class="feature-item"><strong>Chinese (Simplified)</strong>Full translation</div>
+                    <div class="feature-item"><strong>Chinese (Traditional)</strong>Full translation</div>
+                    <div class="feature-item"><strong>Korean</strong>Full translation</div>
+                    <div class="feature-item"><strong>Russian</strong>Full translation</div>
+                    <div class="feature-item"><strong>Spanish</strong>Full translation</div>
+                    <div class="feature-item"><strong>German</strong>Full translation</div>
+                    <div class="feature-item"><strong>Portuguese</strong>Full translation</div>
+                </div>
+                <h3>Themes</h3>
+                <p>9 built-in themes, switchable via Settings or <code>/theme</code>:</p>
+                <div class="feature-grid">
+                    <div class="feature-item"><strong>Dark</strong>Default theme</div>
+                    <div class="feature-item"><strong>Light</strong>Full profile support</div>
+                    <div class="feature-item"><strong>System</strong>Follows OS preference</div>
+                    <div class="feature-item"><strong>OLED</strong>Pure black for OLED</div>
+                    <div class="feature-item"><strong>Sienna</strong>Warm brown tones</div>
+                    <div class="feature-item"><strong>Slate</strong>Cool gray palette</div>
+                    <div class="feature-item"><strong>Solarized Dark</strong>Classic Solarized</div>
+                    <div class="feature-item"><strong>Monokai</strong>Vibrant dark</div>
+                    <div class="feature-item"><strong>Nord</strong>Arctic blue palette</div>
+                </div>
+            </section>
+
+            <section id="security">
+                <h2>Security and Authentication <a href="#security" class="anchor">#</a></h2>
+                <h3>Password Authentication</h3>
+                <pre><code>HERMES_WEBUI_PASSWORD=your-secret-password</code></pre>
+                <p>Uses signed HMAC HTTP-only cookies. Cookie not accessible via JavaScript, preventing XSS session hijacking.</p>
+                <h3>Rate Limiting</h3>
+                <p>Login rate limiting persists across restarts. Failed attempts stored in <code>STATE_DIR/.login_attempts</code> with atomic writes and 0600 permissions. Buckets prune on load.</p>
+                <h3>Security Headers</h3>
+                <p>All responses include security headers. CDN resources SRI-pinned to prevent supply chain attacks.</p>
+                <h3>API Redaction</h3>
+                <p>API keys redacted by default. Self-hosted users can disable via Settings toggle. Lazy check at call-time, default ON for safety.</p>
+                <h3>Workspace Allowlist</h3>
+                <p>Paths validated against <code>workspaces.json</code>. Directory traversal prevented by <code>_resolve_workspace</code>.</p>
+                <h3>Offline Recovery</h3>
+                <p>When browser cannot reach Hermes, high-contrast offline banner appears. App probes <code>/health</code> automatically and refreshes on reconnection. Stream errors deferred while offline.</p>
+                <h3>PWA Security</h3>
+                <p>Service-worker shell assets use network-first strategy (with cache fallback). PWA install + offline launch preserved via install-time pre-caching.</p>
+            </section>
+
+            <section id="pwa-mobile">
+                <h2>PWA and Mobile <a href="#pwa-mobile" class="anchor">#</a></h2>
+                <h3>Mobile Experience</h3>
+                <p>Designed mobile-first:</p>
+                <ul>
+                    <li><strong>Hamburger sidebar:</strong> Collapsible navigation on small screens</li>
+                    <li><strong>Touch-friendly targets:</strong> 44px minimum touch targets</li>
+                    <li><strong>Full-height chat:</strong> Chat takes full viewport on phones</li>
+                    <li><strong>Slide-overs:</strong> Panels slide over content on mobile</li>
+                    <li><strong>Responsive breakpoints:</strong> Works at all screen sizes</li>
+                </ul>
+                <h3>Tailscale Access</h3>
+                <p>Access via Tailscale for native app-like mobile experience. No port forwarding, no public exposure.</p>
+                <h3>PWA Features</h3>
+                <ul>
+                    <li><strong>Service worker:</strong> Network-first caching for shell assets</li>
+                    <li><strong>Offline recovery:</strong> Banner + auto-reconnect</li>
+                    <li><strong>Install prompt:</strong> Add to home screen on supported browsers</li>
+                    <li><strong>Stream error deferral:</strong> Brief network drops do not surface terminal errors</li>
+                </ul>
+            </section>
+
+            <section id="env-vars">
+                <h2>Environment Variables <a href="#env-vars" class="anchor">#</a></h2>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>Variable</th><th>Description</th><th>Default</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>HERMES_WEBUI_HOST</code></td><td>HTTP server bind address</td><td><code>0.0.0.0</code></td></tr>
+                        <tr><td><code>HERMES_WEBUI_PORT</code></td><td>HTTP server port</td><td><code>8787</code></td></tr>
+                        <tr><td><code>HERMES_WEBUI_PASSWORD</code></td><td>Password for auth</td><td>(unset - no auth)</td></tr>
+                        <tr><td><code>HERMES_WEBUI_STATE_DIR</code></td><td>WebUI state directory</td><td><code>~/.hermes/webui-mvp</code></td></tr>
+                        <tr><td><code>HERMES_WEBUI_ONBOARDING_OPEN</code></td><td>Bypass onboarding IP check</td><td><code>0</code></td></tr>
+                        <tr><td><code>HERMES_WEBUI_TRUST_PROXY</code></td><td>Trust X-Forwarded-For</td><td><code>0</code></td></tr>
+                        <tr><td><code>HERMES_HOME</code></td><td>Hermes Agent home</td><td><code>~/.hermes</code></td></tr>
+                        <tr><td><code>WANTED_UID</code></td><td>Container UID</td><td>Auto-detected</td></tr>
+                        <tr><td><code>WANTED_GID</code></td><td>Container GID</td><td>Auto-detected</td></tr>
+                        <tr><td><code>HERMES_SKIP_CHMOD</code></td><td>Skip chmod on startup</td><td><code>0</code></td></tr>
+                        <tr><td><code>HERMES_HOME_MODE</code></td><td>File permission mode</td><td><code>0600</code></td></tr>
+                        <tr><td><code>HERMES_ALLOW_ROOT_GATEWAY</code></td><td>Allow root gateway</td><td><code>0</code></td></tr>
+                        <tr><td><code>HERMES_DASHBOARD</code></td><td>Enable dashboard</td><td>(unset)</td></tr>
+                        <tr><td><code>HERMES_DASHBOARD_HOST</code></td><td>Dashboard bind</td><td><code>0.0.0.0</code></td></tr>
+                        <tr><td><code>HERMES_DASHBOARD_PORT</code></td><td>Dashboard port</td><td><code>9119</code></td></tr>
+                        <tr><td><code>API_SERVER_ENABLED</code></td><td>Enable OpenAI-compatible API</td><td><code>false</code></td></tr>
+                        <tr><td><code>API_SERVER_HOST</code></td><td>API server bind</td><td><code>127.0.0.1</code></td></tr>
+                        <tr><td><code>API_SERVER_KEY</code></td><td>API server key</td><td>(unset)</td></tr>
+                    </tbody>
+                </table></div>
+            </section>
+
+            <section id="api-reference">
+                <h2>API Reference <a href="#api-reference" class="anchor">#</a></h2>
+                <h3>Sessions</h3>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>GET</code></td><td><code>/api/sessions</code></td><td>List all sessions</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api/session/new</code></td><td>Create session (accepts <code>worktree: true</code>)</td></tr>
+                        <tr><td><code>GET</code></td><td><code>/api/session/:id</code></td><td>Get session details</td></tr>
+                        <tr><td><code>PUT</code></td><td><code>/api/session/:id</code></td><td>Update session</td></tr>
+                        <tr><td><code>DELETE</code></td><td><code>/api/session/:id</code></td><td>Delete session</td></tr>
+                    </tbody>
+                </table></div>
+                <h3>Chat</h3>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>POST</code></td><td><code>/api/chat</code></td><td>Send message (SSE streaming)</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api/chat/:id/cancel</code></td><td>Cancel streaming</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api/chat/:id/approve</code></td><td>Approve/deny command</td></tr>
+                    </tbody>
+                </table></div>
+                <h3>Workspace</h3>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>GET</code></td><td><code>/api/workspace</code></td><td>List directory</td></tr>
+                        <tr><td><code>GET</code></td><td><code>/api/workspace/read</code></td><td>Read file content</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api/workspace/write</code></td><td>Write file</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api/workspace/upload</code></td><td>Upload file</td></tr>
+                    </tbody>
+                </table></div>
+                <h3>Other Endpoints</h3>
+                <div class="table-wrapper"><table>
+                    <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>GET</code></td><td><code>/api/insights?days=30</code></td><td>Usage analytics (max 365 days)</td></tr>
+                        <tr><td><code>GET</code></td><td><code>/api/rollback/list</code></td><td>List checkpoints</td></tr>
+                        <tr><td><code>GET</code></td><td><code>/api/rollback/diff</code></td><td>Get checkpoint diff</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api/rollback/restore</code></td><td>Restore checkpoint</td></tr>
+                        <tr><td><code>GET</code></td><td><code>/api/commands</code></td><td>List slash commands</td></tr>
+                        <tr><td><code>POST</code></td><td><code>/api/commands/exec</code></td><td>Execute slash command</td></tr>
+                        <tr><td><code>GET</code></td><td><code>/health</code></td><td>Health check</td></tr>
+                    </tbody>
+                </table></div>
+            </section>
+
+            <section id="troubleshooting">
+                <h2>Troubleshooting <a href="#troubleshooting" class="anchor">#</a></h2>
+                <h4>Onboarding blocked behind reverse proxy</h4>
+                <p><strong>Fix:</strong> Upgrade to v0.50.22+, or set <code>HERMES_WEBUI_ONBOARDING_OPEN=1</code>, or set <code>HERMES_WEBUI_PASSWORD</code> before first run.</p>
+                <h4>Container permission issues</h4>
+                <p><strong>Fix:</strong> Set <code>WANTED_UID</code> and <code>WANTED_GID</code> to match host user. Use <code>id -u</code> and <code>id -g</code>.</p>
+                <h4>Agent dependencies not installed</h4>
+                <p><strong>Fix:</strong> Check <code>hermes-agent-src</code> volume is mounted correctly. Check container logs for <code>uv pip install</code> output.</p>
+                <h4>SSH tunnel connection drops</h4>
+                <p><strong>Fix:</strong> SSE auto-reconnect handles this. Add <code>ServerAliveInterval 60</code> to SSH config if persistent.</p>
+                <h4>Docker port binding - cannot access from other machines</h4>
+                <p><strong>Fix:</strong> Change port to <code>"8787:8787"</code> in <code>docker-compose.yml</code> and set <code>HERMES_WEBUI_PASSWORD</code>.</p>
+                <h4>Two-container agent resolution</h4>
+                <p><strong>Fix:</strong> Use named volumes from <code>docker-compose.two-container.yml</code>. Do not replace with bind mounts.</p>
+                <h4>Podman compatibility</h4>
+                <p><strong>Fix:</strong> Upgrade to Podman 4+, or use single-container setup, or use community image <code>sunnysktsang/hermes-suite</code>.</p>
+                <h4>Workspace not in allowlist</h4>
+                <p><strong>Fix:</strong> Ensure workspace path is in <code>workspaces.json</code>.</p>
+                <h4>Offline banner will not disappear</h4>
+                <p><strong>Fix:</strong> Check network connection and that Hermes server is running. Banner appears when <code>navigator.onLine === false</code> or <code>/health</code> probe fails.</p>
+                <h4>Stream errors on page load</h4>
+                <p><strong>Fix:</strong> Normal if previous session was streaming when page closed. Click different session and back, or refresh.</p>
+            </section>
+
+            <section id="faq">
+                <h2>Frequently Asked Questions <a href="#faq" class="anchor">#</a></h2>
+                <h3>General</h3>
+<div class="faq-item"><button class="faq-question">What is Hermes WebUI?</button><div class="faq-answer"><p>Hermes WebUI is a lightweight, dark-themed web application providing a browser-based interface to Hermes Agent. Full 1:1 CLI parity. Built with Python and vanilla JS, no build step.</p></div></div>
+<div class="faq-item"><button class="faq-question">Do I need Hermes Agent installed separately?</button><div class="faq-answer"><p>In single-container Docker mode, no - the WebUI installs agent dependencies at startup. In local install, yes - agent must be installed. WebUI imports agent modules in-process.</p></div></div>
+<div class="faq-item"><button class="faq-question">Is it free?</button><div class="faq-answer"><p>Yes, MIT License. Self-host on your own hardware.</p></div></div>
+<div class="faq-item"><button class="faq-question">WebUI vs Dashboard?</button><div class="faq-answer"><p>WebUI is a full chat interface with CLI parity. Dashboard is a monitoring/status panel. They can run side-by-side (three-container setup).</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I run alongside CLI?</button><div class="faq-answer"><p>Yes! They share the same ~/.hermes directory. CLI sessions appear with a gold 'cli' badge.</p></div></div>
+<h3>Deployment</h3>
+<div class="faq-item"><button class="faq-question">How to deploy on VPS?</button><div class="faq-answer"><p>Recommended: Docker + SSH tunnel.<br><br>On VPS: docker run with -p 127.0.0.1:8787:8787 and HERMES_WEBUI_PASSWORD.<br>Locally: ssh -N -L 8787:127.0.0.1:8787 user@vps<br>Then open http://localhost:8787</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I expose directly to internet?</button><div class="faq-answer"><p>Yes, but MUST set HERMES_WEBUI_PASSWORD. Also recommended: reverse proxy with TLS (Caddy, nginx).</p></div></div>
+<div class="faq-item"><button class="faq-question">Does it work on ARM?</button><div class="faq-answer"><p>Yes. Pre-built Docker images for amd64 and arm64.</p></div></div>
+<div class="faq-item"><button class="faq-question">How to update?</button><div class="faq-answer"><p>Docker: docker pull + docker compose down + docker compose up -d<br>Local: git pull + ./start.sh</p></div></div>
+<h3>Chat and Models</h3>
+<div class="faq-item"><button class="faq-question">Which models are supported?</button><div class="faq-answer"><p>Any provider in config.yaml: OpenAI, Anthropic, Google, OpenRouter, xAI, GLM, DeepSeek, Mistral, MiniMax, Kimi, Nous Portal, custom OpenAI-compatible. Ollama, LM Studio, vLLM discovered live.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I switch models mid-conversation?</button><div class="faq-answer"><p>Yes. Composer footer has model picker. Each session can use a different model.</p></div></div>
+<div class="faq-item"><button class="faq-question">How to use Ollama or LM Studio?</button><div class="faq-answer"><p>Configure provider in config.yaml with local endpoint URL. WebUI discovers models via /v1/models. LM Studio has first-class support.</p></div></div>
+<div class="faq-item"><button class="faq-question">What happens when context fills up?</button><div class="faq-answer"><p>Context ring shows fill percentage. Use /compact to compact context. Agent handles compaction automatically.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I send while agent responds?</button><div class="faq-answer"><p>Yes. Next message is queued and sent inline after current response completes.</p></div></div>
+<h3>Sessions</h3>
+<div class="faq-item"><button class="faq-question">Where are sessions stored?</button><div class="faq-answer"><p>In Hermes Agent state.db SQLite in ~/.hermes/. WebUI reads/writes same database as CLI.</p></div></div>
+<div class="faq-item"><button class="faq-question">How to backup?</button><div class="faq-answer"><p>Backup entire ~/.hermes/ directory. In Docker, backup named volume or bind mount.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I export conversations?</button><div class="faq-answer"><p>Yes. Use ... dropdown to export as JSON or download as Markdown transcript.</p></div></div>
+<div class="faq-item"><button class="faq-question">What are projects?</button><div class="faq-answer"><p>Named folders with colors for organizing sessions. Assign via ... dropdown. Sidebar shows chip filter bar.</p></div></div>
+<div class="faq-item"><button class="faq-question">What is CLI session bridge?</button><div class="faq-answer"><p>CLI sessions from agent SQLite appear in sidebar with gold 'cli' badge. Click to import with full history.</p></div></div>
+<h3>Workspace and Files</h3>
+<div class="faq-item"><button class="faq-question">How to configure workspace?</button><div class="faq-answer"><p>Mount as /workspace in Docker, or configure in config.yaml. Path must be in workspaces.json.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I edit files?</button><div class="faq-answer"><p>Yes. Create, edit, delete, rename with unsaved-change guard.</p></div></div>
+<div class="faq-item"><button class="faq-question">Does it show git status?</button><div class="faq-answer"><p>Yes. Branch name and dirty file count badge in workspace header.</p></div></div>
+<h3>Profiles and Skills</h3>
+<div class="faq-item"><button class="faq-question">What are profiles?</button><div class="faq-answer"><p>Named configurations bundling model, provider, and agent behavior. Create in Control Center, switch per session.</p></div></div>
+<div class="faq-item"><button class="faq-question">How do skills work?</button><div class="faq-answer"><p>Reusable capabilities stored as markdown in ~/.hermes/skills/. WebUI provides full CRUD. Skills can be auto-generated by agent.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I edit memory files?</button><div class="faq-answer"><p>Yes. Stored as editable markdown in ~/.hermes/memory/. WebUI has memory write surface. Also editable on disk.</p></div></div>
+<h3>Cron and Scheduling</h3>
+<div class="faq-item"><button class="faq-question">Do jobs run when WebUI is closed?</button><div class="faq-answer"><p>Yes. Managed by Hermes Agent scheduler. Jobs fire as long as agent is running.</p></div></div>
+<div class="faq-item"><button class="faq-question">Where do results go?</button><div class="faq-answer"><p>Delivered to configured targets: Telegram, Discord, Slack, Signal, email, etc.</p></div></div>
+<h3>Security</h3>
+<div class="faq-item"><button class="faq-question">Is my data secure?</button><div class="faq-answer"><p>All data stored locally in ~/.hermes/. Nothing uploaded externally. Self-hosted. API keys redacted by default.</p></div></div>
+<div class="faq-item"><button class="faq-question">How to set password?</button><div class="faq-answer"><p>Set HERMES_WEBUI_PASSWORD env var. Uses signed HMAC HTTP-only cookies.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I disable API redaction?</button><div class="faq-answer"><p>Yes. Settings toggle. Default ON for safety.</p></div></div>
+<h3>Mobile and PWA</h3>
+<div class="faq-item"><button class="faq-question">Does it work on mobile?</button><div class="faq-answer"><p>Yes. Mobile-first with hamburger sidebar, 44px touch targets, full-height chat, slide-over panels.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I install as PWA?</button><div class="faq-answer"><p>Yes. Service worker with network-first caching. 'Add to Home Screen' on Chrome/Edge/Safari. Works offline with auto-recovery.</p></div></div>
+<h3>Advanced</h3>
+<div class="faq-item"><button class="faq-question">How to use git worktrees?</button><div class="faq-answer"><p>Create session with worktree flag. WebUI calls _setup_worktree() for isolated git worktree.</p></div></div>
+<div class="faq-item"><button class="faq-question">What is /goal command?</button><div class="faq-answer"><p>Tracks multi-turn goals with budget enforcement. SQLite-backed per profile.</p></div></div>
+<div class="faq-item"><button class="faq-question">How do rollback checkpoints work?</button><div class="faq-answer"><p>Agent maintains shadow git repos. WebUI shows checkpoint list, diff viewer, restore with confirmation.</p></div></div>
+<div class="faq-item"><button class="faq-question">Can I use with multiple agents?</button><div class="faq-answer"><p>WebUI is for single Hermes Agent. For multi-agent, consider Aion UI which supports 20+ agents including Hermes.</p></div></div>
+<div class="faq-item"><button class="faq-question">How to contribute?</button><div class="faq-answer"><p>GitHub: nesquena/hermes-webui. 41+ contributors, 164+ releases, 4,288 tests. Fork and submit PR.</p></div></div>
+<div class="faq-item"><button class="faq-question">Test coverage?</button><div class="faq-answer"><p>4,288 tests across 53 files. Run: pytest tests/</p></div></div>
+<div class="faq-item"><button class="faq-question">How to report bugs?</button><div class="faq-answer"><p>File GitHub issue with: version, deployment method, steps to reproduce, expected vs actual, browser/OS, logs.</p></div></div>
+
+            </section>
+        </div></main>
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>
+    </button>
+    <script>
+    const themes = ['dark','light','oled'];
+    let themeIndex = 0;
+    const saved = localStorage.getItem('hermes-guide-theme');
+    if (saved && themes.includes(saved)) { document.documentElement.setAttribute('data-theme', saved); themeIndex = themes.indexOf(saved); }
+    document.getElementById('themeToggle').addEventListener('click', () => {
+        themeIndex = (themeIndex + 1) % themes.length;
+        document.documentElement.setAttribute('data-theme', themes[themeIndex]);
+        localStorage.setItem('hermes-guide-theme', themes[themeIndex]);
+    });
+    document.getElementById('menuToggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+    });
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('open');
+        });
+    });
+    const sections = document.querySelectorAll('section[id], div.hero[id]');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                sidebarLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+                });
+            }
+        });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(s => observer.observe(s));
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        document.getElementById('progressBar').style.width = ((scrollTop / docHeight) * 100) + '%';
+        document.getElementById('backToTop').classList.toggle('visible', scrollTop > 400);
+    });
+    document.getElementById('backToTop').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    document.querySelectorAll('.faq-question').forEach(btn => { btn.addEventListener('click', () => { btn.parentElement.classList.toggle('open'); }); });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const g = btn.closest('.tabs');
+            g.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            g.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+    });
+    function copyCode(btn) {
+        const code = btn.closest('.code-header').nextElementSibling.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+        });
+    }
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        if (!q) { document.querySelectorAll('section, .hero').forEach(s => s.style.display = ''); return; }
+        document.querySelectorAll('section, .hero').forEach(s => {
+            s.style.display = s.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); searchInput.focus(); }
+        if (e.key === 'Escape') { searchInput.blur(); searchInput.value = ''; document.querySelectorAll('section, .hero').forEach(s => s.style.display = ''); }
+    });
+    </script>
+</body>
+</html>
